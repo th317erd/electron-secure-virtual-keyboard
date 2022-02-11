@@ -1,1 +1,1 @@
-module.exports = require('./dist/client.js');
+module.exports = require('./src/client.js');

@@ -498,18 +498,12 @@ function eventTargetAgnosticAddListener(emitter, name, listener, flags) {
 }
 
 },{}],2:[function(require,module,exports){
+(function (global){(function (){
 /* global secureVirtualKeyboardIPC */
 
 const EventEmitter = require('events');
 
-(function(factory) {
-  if (typeof jQuery === 'undefined') {
-    throw new Error('jQuery not found in global scope');
-  }
-
-  // Browser globals
-  factory(jQuery);
-}(function($) {
+function factory($) {
   /**
    * A wrapper over setTimeout to ease clearing and early trigger of the function.
    * @param {function} fn
@@ -1257,6 +1251,25 @@ const EventEmitter = require('events');
       ]
     }
   };
-}));
+}
 
+if (typeof window !== 'undefined') {
+  if (typeof jQuery === 'undefined')
+    throw new Error('jQuery not found in the global scope');
+
+  factory(jQuery);
+} else if (typeof module !== 'undefined') {
+  module.exports = function(win, _jQuery) {
+    var jQuery = _jQuery;
+    if (jQuery === undefined)
+      jQuery = global.jQuery;
+
+    if (typeof jQuery === 'undefined')
+      throw new Error('jQuery not found in the global scope, and was not specified directly');
+
+    factory(jQuery(win));
+  };
+}
+
+}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"events":1}]},{},[2]);

@@ -2,14 +2,7 @@
 
 const EventEmitter = require('events');
 
-(function(factory) {
-  if (typeof jQuery === 'undefined') {
-    throw new Error('jQuery not found in global scope');
-  }
-
-  // Browser globals
-  factory(jQuery);
-}(function($) {
+function factory($) {
   /**
    * A wrapper over setTimeout to ease clearing and early trigger of the function.
    * @param {function} fn
@@ -757,4 +750,22 @@ const EventEmitter = require('events');
       ]
     }
   };
-}));
+}
+
+if (typeof window !== 'undefined') {
+  if (typeof jQuery === 'undefined')
+    throw new Error('jQuery not found in the global scope');
+
+  factory(jQuery);
+} else if (typeof module !== 'undefined') {
+  module.exports = function(win, _jQuery) {
+    var jQuery = _jQuery;
+    if (jQuery === undefined)
+      jQuery = global.jQuery;
+
+    if (typeof jQuery === 'undefined')
+      throw new Error('jQuery not found in the global scope, and was not specified directly');
+
+    factory(jQuery(win));
+  };
+}

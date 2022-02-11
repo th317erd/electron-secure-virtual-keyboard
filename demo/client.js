@@ -1253,12 +1253,7 @@ function factory($) {
   };
 }
 
-if (typeof window !== 'undefined') {
-  if (typeof jQuery === 'undefined')
-    throw new Error('jQuery not found in the global scope');
-
-  factory(jQuery);
-} else if (typeof module !== 'undefined') {
+if (typeof module !== 'undefined') {
   module.exports = function(win, _jQuery) {
     var jQuery = _jQuery;
     if (jQuery === undefined)
@@ -1267,8 +1262,13 @@ if (typeof window !== 'undefined') {
     if (typeof jQuery === 'undefined')
       throw new Error('jQuery not found in the global scope, and was not specified directly');
 
-    factory(jQuery(win));
+    factory(jQuery);
   };
+} else if (typeof window !== 'undefined') {
+  if (typeof jQuery === 'undefined')
+    throw new Error('jQuery not found in the global scope');
+
+  factory(jQuery);
 }
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})

@@ -1,75 +1,91 @@
-const { ipcMain } = require('electron')
 const EventEmitter = require('events')
 
 class VirtualKeyboard extends EventEmitter {
-    constructor(webContent) {
-        super();
-        this.webContent = webContent;
-        this.keyBuffer = [];
-        this.keyPressWait = 30;
-        this.init();
+  constructor(ipcMain, webContent) {
+    super();
+
+    this.webContent = webContent;
+    this.keyBuffer = [];
+    this.keyPressWait = 30;
+    this.ipcMain = ipcMain;
+
+    this.init();
+  }
+
+  init() {
+    // renderer to main process message api handlers
+    this.ipcMain.handle('secure-virtual-keyboard:keypress', this.receiveKeyPress.bind(this));
+    this.ipcMain.handle('secure-virtual-keyboard:config', this.config.bind(this));
+
+    // redirect select events back to renderer process
+    this.on('buffer-empty', () => {
+      this.webContent.send('keyboard-buffer-empty');
+    });
+  }
+
+  config(_, propName, value) {
+    if (propName === 'keyPressWait') {
+      if (arguments.length === 2)
+        return this.keyPressWait;
+
+      this.keyPressWait = parseInt(value, 10);
+    }
+  }
+
+  receiveKeyPress(_, value) {
+    // continues adding keys to the key buffer without stopping a flush
+    var chars = ('' + value).split('');
+    for (var i = 0, il = chars.length; i < il; i++) {
+      this.keyBuffer.push(chars[i]);
     }
 
-    init() {
-        // renderer to main process message api handlers
-        ipcMain.on('virtual-keyboard-keypress', (e, value) => this.receiveKeyPress(e, value));
-        ipcMain.on('virtual-keyboard-config', this.config.bind(this));
+    // don't call flushBuffer if already flushing
+    if (!this.flushing) {
+      this.flushBuffer();
+    }
+  }
 
-        // redirect select events back to renderer process
-        this.on('buffer-empty', () => {
-            this.webContent.send('keyboard-buffer-empty')
-        })
+  flushBuffer() {
+    var keyCode = this.keyBuffer.shift();
+    if (keyCode === undefined) {
+      this.flushing = false;
+      this.emit('buffer-empty');
+      return;
     }
 
-    config(e, key, value) {
-        if ( key == 'keyPressWait' ) {
-            this.keyPressWait = parseInt(value);
-        }
-    }
+    this.flushing = true;
 
-    receiveKeyPress(e, value) {
-        // continues adding keys to the key buffer without stopping a flush
-        var chars = String(value).split('');
-        for(var i=0; i<chars.length; i++) {
-            this.keyBuffer.push(chars[i]);
-        }
+    // keydown
+    this.webContent.sendInputEvent({
+      type: 'keyDown',
+      keyCode
+    });
 
-        // don't call flushBuffer if already flushing
-        if (!this.flushing ) {
-            this.flushBuffer()
-        }
-    }
+    // keypres
+    this.webContent.sendInputEvent({
+      type: 'char',
+      keyCode,
+    });
 
-    flushBuffer() {
-        var ch = this.keyBuffer.shift()
-        if ( ch === undefined ) {
-            this.flushing = false
-            this.emit('buffer-empty')
-            return
-        }
+    // keyup
+    this.webContent.sendInputEvent({
+      type: 'keyUp',
+      keyCode,
+    })
 
-        this.flushing = true;
-
-        // keydown
-        this.webContent.sendInputEvent({
-            type: 'keyDown',
-            keyCode: ch
-        })
-
-        // keypres
-        this.webContent.sendInputEvent({
-            type: 'char',
-            keyCode: ch
-        })
-
-        // keyup
-        this.webContent.sendInputEvent({
-            type: 'keyUp',
-            keyCode: ch
-        })
-
-        setTimeout(this.flushBuffer.bind(this), this.keyPressWait)
-    }
+    setTimeout(this.flushBuffer.bind(this), this.keyPressWait);
+  }
 }
 
-module.exports = VirtualKeyboard
+function setupSecureBridge(contextBridge, ipcRenderer) {
+  contextBridge.exposeInMainWorld('secureVirtualKeyboardIPC', {
+    sendKeyPress: (key) => ipcRenderer.invoke('secure-virtual-keyboard:keypress', key),
+    getConfigProp: (propName) => ipcRenderer.invoke('secure-virtual-keyboard:config', propName),
+    setConfigProp: (propName, value) => ipcRenderer.invoke('secure-virtual-keyboard:config', propName, value),
+  });
+};
+
+module.exports = {
+  VirtualKeyboard,
+  setupSecureBridge,
+};

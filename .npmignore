@@ -67,3 +67,5 @@ typings/
 .serverless
 
 .vscode/
+demo/
+assets/

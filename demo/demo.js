@@ -1,48 +1,54 @@
-const electron = require('electron')
-const app = electron.app
-const BrowserWindow = electron.BrowserWindow
-const path = require('path')
-const url = require('url')
-const VirtualKeyboard = require('../index');
+const Path = require('path');
+
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+} = require('electron');
+
+const { VirtualKeyboard } = require('../index');
 
 app.commandLine.appendSwitch('ignore-gpu-blacklist')
 
-let mainWindow
-let vkb
+var mainWindow;
+var virtualKeyboard;
 
 function createWindow() {
-    mainWindow = new BrowserWindow({
-        width: 800,
-        height: 600,
-        show: false,
-        backgroundColor: '#000000',
-    })
+  mainWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    show: false,
+    backgroundColor: '#000000',
+    webPreferences: {
+      preload: Path.join(__dirname, 'preload.js')
+    },
+  });
 
-    mainWindow.loadURL(url.format({
-        pathname: path.join(__dirname, 'demo.html'),
-        protocol: 'file:',
-        slashes: true
-    }))
-    mainWindow.webContents.setFrameRate(30)
+  mainWindow.loadFile(Path.join(__dirname, 'demo.html'));
 
-    mainWindow.show()
-    mainWindow.maximize()
-    mainWindow.webContents.openDevTools()
-    mainWindow.on('closed', function () {
-        mainWindow = null
-    })
+  mainWindow.webContents.setFrameRate(30);
 
-    vkb = new VirtualKeyboard(mainWindow.webContents)
+  mainWindow.show();
+  mainWindow.maximize();
+  mainWindow.webContents.openDevTools();
+
+  mainWindow.on('closed', function () {
+    mainWindow = null
+  });
+
+  virtualKeyboard = new VirtualKeyboard(ipcMain, mainWindow.webContents);
 }
 
-app.on('ready', createWindow)
+app.on('ready', createWindow);
+
 app.on('window-all-closed', function () {
-    if (process.platform !== 'darwin') {
-        app.quit()
-    }
-})
+  if (process.platform !== 'darwin') {
+    app.quit()
+  }
+});
+
 app.on('activate', function () {
-    if (mainWindow === null) {
-        createWindow()
-    }
-})
+  if (mainWindow === null) {
+    createWindow()
+  }
+});

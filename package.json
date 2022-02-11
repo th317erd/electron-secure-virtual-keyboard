@@ -1,21 +1,35 @@
 {
-  "name": "electron-virtual-keyboard",
+  "name": "electron-secure-virtual-keyboard",
   "version": "1.0.7",
-  "description": "An electron based virtual keyboard. Uses electron's sendInputEvent api to implement a simple customizable soft keyboard.",
+  "description": "A secure electron based virtual keyboard. Uses electron's sendInputEvent api to implement a simple customizable soft keyboard.",
   "main": "index.js",
-  "author": "forellana@digithinkit.com",
+  "author": "th317erd@gmail.com",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/DigiThinkIT/electron-virtual-keyboard.git"
+    "url": "https://github.com/th317erd/electron-secure-virtual-keyboard.git"
   },
+  "keywords": [
+    "electron",
+    "virtual-keyboard",
+    "soft-keyboard",
+    "keyboard"
+  ],
   "scripts": {
-    "demo": "electron ./demo/demo.js"
+    "electron:demo": "node ./node_modules/.bin/electron ./demo/demo.js",
+    "build:dist": "node ./node_modules/.bin/browserify ./src/client.js -o ./dist/client.js",
+    "build:demo": "node ./node_modules/.bin/browserify ./src/client.js -o ./demo/client.js",
+    "build": "node ./node_modules/.bin/run-s build:dist build:demo",
+    "demo": "node ./node_modules/.bin/run-s build:demo electron:demo",
+    "prepare": "node ./node_modules/.bin/run-s build:dist"
   },
   "devDependencies": {
-    "electron": "^2.0.2"
+    "browserify": "^17.0.0",
+    "electron": "^17.0.0",
+    "npm-run-all": "4.1.5",
+    "events": "^3.3.0",
+    "jquery": "^3.6.0"
   },
   "dependencies": {
-    "jquery": "^3.3.1"
   }
 }

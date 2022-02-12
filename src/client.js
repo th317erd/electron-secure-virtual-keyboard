@@ -752,20 +752,4 @@ function factory($) {
   };
 }
 
-if (typeof module !== 'undefined') {
-  module.exports = function(win, _jQuery) {
-    var jQuery = _jQuery;
-    if (jQuery === undefined)
-      jQuery = global.jQuery;
-
-    if (typeof jQuery === 'undefined')
-      throw new Error('jQuery not found in the global scope, and was not specified directly');
-
-    factory(jQuery);
-  };
-} else if (typeof window !== 'undefined') {
-  if (typeof jQuery === 'undefined')
-    throw new Error('jQuery not found in the global scope');
-
-  factory(jQuery);
-}
+module.exports = factory;

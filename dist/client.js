@@ -1255,14 +1255,17 @@ function factory($) {
 
 if (typeof module !== 'undefined') {
   module.exports = function(win, _jQuery) {
-    var jQuery = _jQuery;
-    if (jQuery === undefined)
-      jQuery = global.jQuery;
+    var jQ = _jQuery;
+    if (jQ === undefined && typeof jQuery !== 'undefined')
+      jQ = jQuery;
 
-    if (typeof jQuery === 'undefined')
+    if (jQ === undefined)
+      jQ = global.jQuery;
+
+    if (jQ === undefined)
       throw new Error('jQuery not found in the global scope, and was not specified directly');
 
-    factory(jQuery);
+    factory(jQ);
   };
 } else if (typeof window !== 'undefined') {
   if (typeof jQuery === 'undefined')

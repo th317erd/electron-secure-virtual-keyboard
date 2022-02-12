@@ -17,8 +17,8 @@
   ],
   "scripts": {
     "electron:demo": "node ./node_modules/.bin/electron ./demo/demo.js",
-    "build:dist": "node ./node_modules/.bin/browserify ./src/client.js -o ./dist/client.js",
-    "build:demo": "node ./node_modules/.bin/browserify ./src/client.js -o ./demo/client.js",
+    "build:dist": "node ./node_modules/.bin/browserify ./browser.js -o ./dist/client.js",
+    "build:demo": "node ./node_modules/.bin/browserify ./browser.js -o ./demo/client.js",
     "build": "node ./node_modules/.bin/run-s build:dist build:demo",
     "demo": "node ./node_modules/.bin/run-s build:demo electron:demo",
     "prepare": "node ./node_modules/.bin/run-s build:dist"

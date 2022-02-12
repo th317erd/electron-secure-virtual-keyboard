@@ -37,6 +37,19 @@ or through yarn:
 yarn install && yarn demo
 ```
 
+# Imports
+
+`./node_modules/electron-secure-virtual-keyboard/dist/client.js` - Built browser distrubution for use with `<script>` tags.
+
+`./node_modules/electron-secure-virtual-keyboard/browser.js` - Browser import, for use with build systems, like Webpack or browserify.
+
+`./node_modules/electron-secure-virtual-keyboard/node.js` - Node import, for direct use within node (i.e. jsdom), or for use with build systems. With this import is is required that you supply `jQuery` directly:
+
+```javascript
+const jQuery = require('jquery');
+const VirtualKeyboardClient = require('electron-secure-virtual-keyboard/node')(jQuery);
+```
+
 # Upgrading from [electron-virtual-keyboard](https://www.npmjs.com/package/electron-virtual-keyboard)
 
 If you are coming from [electron-virtual-keyboard](https://www.npmjs.com/package/electron-virtual-keyboard) then the update steps to use this library instead are simple. There are only a few things that need to change.

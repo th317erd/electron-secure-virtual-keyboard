@@ -1,5 +1,7 @@
 const EventEmitter = require('events')
 
+var virtualKeyboardID = 1;
+
 class VirtualKeyboard extends EventEmitter {
   constructor(ipcMain, webContent) {
     super();
@@ -8,14 +10,15 @@ class VirtualKeyboard extends EventEmitter {
     this.keyBuffer = [];
     this.keyPressWait = 30;
     this.ipcMain = ipcMain;
+    this.id = virtualKeyboardID++;
 
     this.init();
   }
 
   init() {
     // renderer to main process message api handlers
-    this.ipcMain.handle('secure-virtual-keyboard:keypress', this.receiveKeyPress.bind(this));
-    this.ipcMain.handle('secure-virtual-keyboard:config', this.config.bind(this));
+    this.ipcMain.handle(`secure-virtual-keyboard${this.id}:keypress`, this.receiveKeyPress.bind(this));
+    this.ipcMain.handle(`secure-virtual-keyboard${this.id}:config`, this.config.bind(this));
 
     // redirect select events back to renderer process
     this.on('buffer-empty', () => {
@@ -77,11 +80,16 @@ class VirtualKeyboard extends EventEmitter {
   }
 }
 
-function setupSecureBridge(contextBridge, ipcRenderer) {
+function setupSecureBridge(contextBridge, ipcRenderer, _keyboardID) {
+  var keyboardID = _keyboardID;
+
+  if (!keyboardID)
+    keyboardID = virtualKeyboardID;
+
   contextBridge.exposeInMainWorld('secureVirtualKeyboardIPC', {
-    sendKeyPress: (key) => ipcRenderer.invoke('secure-virtual-keyboard:keypress', key),
-    getConfigProp: (propName) => ipcRenderer.invoke('secure-virtual-keyboard:config', propName),
-    setConfigProp: (propName, value) => ipcRenderer.invoke('secure-virtual-keyboard:config', propName, value),
+    sendKeyPress: (key) => ipcRenderer.invoke(`secure-virtual-keyboard${keyboardID}:keypress`, key),
+    getConfigProp: (propName) => ipcRenderer.invoke(`secure-virtual-keyboard${keyboardID}:config`, propName),
+    setConfigProp: (propName, value) => ipcRenderer.invoke(`secure-virtual-keyboard${keyboardID}:config`, propName, value),
   });
 };
 

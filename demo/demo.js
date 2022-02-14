@@ -6,7 +6,7 @@ const {
   ipcMain,
 } = require('electron');
 
-const { VirtualKeyboard } = require('../index');
+const { setupVirtualKeyboard } = require('../index');
 
 app.commandLine.appendSwitch('ignore-gpu-blacklist')
 
@@ -33,22 +33,23 @@ function createWindow() {
   mainWindow.webContents.openDevTools();
 
   mainWindow.on('closed', function () {
-    mainWindow = null
+    mainWindow = null;
   });
-
-  virtualKeyboard = new VirtualKeyboard(ipcMain, mainWindow.webContents);
 }
 
-app.on('ready', createWindow);
+app.on('ready', () => {
+  createWindow();
+  virtualKeyboard = setupVirtualKeyboard(ipcMain);
+});
 
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
-    app.quit()
+    app.quit();
   }
 });
 
 app.on('activate', function () {
   if (mainWindow === null) {
-    createWindow()
+    createWindow();
   }
 });

@@ -1,29 +1,17 @@
-const EventEmitter = require('events')
+const EventEmitter = require('events');
 
-var virtualKeyboardID = 1;
+// Singleton reference
+var virtualKeyboard;
 
 class VirtualKeyboard extends EventEmitter {
-  constructor(ipcMain, webContent) {
+  constructor() {
     super();
 
-    this.webContent = webContent;
+    if (virtualKeyboard)
+      throw new Error('Error: Attempting to create another virtual keyboard. The VirtualKeyboard class is a singleton class, and only one should be created inside your main process. One VirtualKeyboard can handle many BrowserWindows or BrowserViews.');
+
     this.keyBuffer = [];
     this.keyPressWait = 30;
-    this.ipcMain = ipcMain;
-    this.id = virtualKeyboardID++;
-
-    this.init();
-  }
-
-  init() {
-    // renderer to main process message api handlers
-    this.ipcMain.handle(`secure-virtual-keyboard${this.id}:keypress`, this.receiveKeyPress.bind(this));
-    this.ipcMain.handle(`secure-virtual-keyboard${this.id}:config`, this.config.bind(this));
-
-    // redirect select events back to renderer process
-    this.on('buffer-empty', () => {
-      this.webContent.send('keyboard-buffer-empty');
-    });
   }
 
   config(_, propName, value) {
@@ -35,11 +23,13 @@ class VirtualKeyboard extends EventEmitter {
     }
   }
 
-  receiveKeyPress(_, value) {
+  receiveKeyPress(event, value) {
+    const webContent = event.sender;
+
     // continues adding keys to the key buffer without stopping a flush
     var chars = ('' + value).split('');
     for (var i = 0, il = chars.length; i < il; i++) {
-      this.keyBuffer.push(chars[i]);
+      this.keyBuffer.push({ webContent, keyCode: chars[i] });
     }
 
     // don't call flushBuffer if already flushing
@@ -49,29 +39,31 @@ class VirtualKeyboard extends EventEmitter {
   }
 
   flushBuffer() {
-    var keyCode = this.keyBuffer.shift();
-    if (keyCode === undefined) {
+    var result = this.keyBuffer.shift();
+    if (result === undefined) {
       this.flushing = false;
       this.emit('buffer-empty');
       return;
     }
 
+    var { webContent, keyCode } = result;
+
     this.flushing = true;
 
     // keydown
-    this.webContent.sendInputEvent({
+    webContent.sendInputEvent({
       type: 'keyDown',
       keyCode
     });
 
     // keypres
-    this.webContent.sendInputEvent({
+    webContent.sendInputEvent({
       type: 'char',
       keyCode,
     });
 
     // keyup
-    this.webContent.sendInputEvent({
+    webContent.sendInputEvent({
       type: 'keyUp',
       keyCode,
     })
@@ -80,20 +72,28 @@ class VirtualKeyboard extends EventEmitter {
   }
 }
 
-function setupSecureBridge(contextBridge, ipcRenderer, _keyboardID) {
-  var keyboardID = _keyboardID;
+function setupVirtualKeyboard(ipcMain) {
+  if (virtualKeyboard)
+    return virtualKeyboard;
 
-  if (!keyboardID)
-    keyboardID = virtualKeyboardID;
+  virtualKeyboard = new VirtualKeyboard();
 
+  ipcMain.handle(`secure-virtual-keyboard:keypress`, virtualKeyboard.receiveKeyPress.bind(virtualKeyboard));
+  ipcMain.handle(`secure-virtual-keyboard:config`, virtualKeyboard.config.bind(virtualKeyboard));
+
+  return virtualKeyboard;
+}
+
+function setupSecureBridge(contextBridge, ipcRenderer) {
   contextBridge.exposeInMainWorld('secureVirtualKeyboardIPC', {
-    sendKeyPress: (key) => ipcRenderer.invoke(`secure-virtual-keyboard${keyboardID}:keypress`, key),
-    getConfigProp: (propName) => ipcRenderer.invoke(`secure-virtual-keyboard${keyboardID}:config`, propName),
-    setConfigProp: (propName, value) => ipcRenderer.invoke(`secure-virtual-keyboard${keyboardID}:config`, propName, value),
+    sendKeyPress: (key) => ipcRenderer.invoke(`secure-virtual-keyboard:keypress`, key),
+    getConfigProp: (propName) => ipcRenderer.invoke(`secure-virtual-keyboard:config`, propName),
+    setConfigProp: (propName, value) => ipcRenderer.invoke(`secure-virtual-keyboard:config`, propName, value),
   });
 };
 
 module.exports = {
   VirtualKeyboard,
+  setupVirtualKeyboard,
   setupSecureBridge,
 };

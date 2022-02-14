@@ -69,10 +69,10 @@ Change To:
 
 `./public/main.js`
 ```javascript
-const { VirtualKeyboard } = require('electron-secure-virtual-keyboard');
+const { setupVirtualKeyboard } = require('electron-secure-virtual-keyboard');
 ```
 
-Next, the way you instantiate the `VirtualKeyboard` class has changed slightly. This change was to enable this virtual keyboard to be used inside another framework (instead of relying on Electron). You now need to pass `ipcMain` directly to the constructor:
+Next, the way you initialze the virtual keyboard has changed slightly. This change was to enable this virtual keyboard to be re-used across many BrowserWindows or BrowserViews, and also to allow the API to be more flexible so it can be used inside another framework (instead of relying on Electron).
 
 From:
 
@@ -85,10 +85,11 @@ Change To:
 `./public/main.js`
 ```javascript
 const { ipcMain } = require('electron');
+const { setupVirtualKeyboard } = require('electron-secure-virtual-keyboard');
 
 ...
-
-var virtualKeyboard = new VirtualKeyboard(ipcMain, mainWindow.webContents);
+// webContents is retreived from the IPC events, so is no longer needed
+var virtualKeyboard = setupVirtualKeyboard(ipcMain);
 ```
 
 Next, you must have a `preload.js` script for your Electron process. Inside the `preload.js` script, you will want the following code to setup the secure keyboard bridge:
@@ -154,18 +155,19 @@ The keyboard requires passing keys over the secure bridge to the main process to
 
 ## Main Process
 
-Somewhere in you main electron process after you have created your window, pass the `ipcMain` and `webContent` arguments to the `VirtualKeyboard` class constructor:
+Somewhere in you main electron process after you have created your window, pass the `ipcMain` argument to the `setupVirtualKeyboard` method. This will intialize the virtual keyboard handler in the main process.
+
+*Note: Only one virtual keyboard handler is needed for the entire process. It will correctly handle virtual keyboard communication for all BrowserWindows and BrowserViews. The `webContents` needed for each window is retreived from the IPC events. The `setupSecureBridge` method still needs to be called in the preload script of every BrowserWindow or BrowserView.*
 
 ```javascript
 const { ipcMain } = require('electron');
-const { VirtualKeyboard } = require('electron-virtual-keyboard');
+const { setupVirtualKeyboard } = require('electron-virtual-keyboard');
 
 var virtualKeyboard; // keep virtual keyboard reference around to reuse.
-function createWindow() {
-    /* Your setup code here */
-
-    virtualKeyboard = new VirtualKeyboard(ipcMain, window.webContents);
-}
+app.on('ready', () => {
+  createWindow();
+  virtualKeyboard = setupVirtualKeyboard(ipcMain);
+});
 ```
 
 ## Preload script

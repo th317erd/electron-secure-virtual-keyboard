@@ -1,6 +1,6 @@
 {
   "name": "electron-secure-virtual-keyboard",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "A secure electron based virtual keyboard. Uses electron's sendInputEvent api to implement a simple customizable soft keyboard.",
   "main": "index.js",
   "author": "th317erd@gmail.com",

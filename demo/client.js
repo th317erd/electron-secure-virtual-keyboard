@@ -1007,15 +1007,6 @@ function factory($) {
   }
 
   /**
-   * Simple test for $.is() method to test compatible elements against.
-   * @param {int} i
-   * @param {DomElement} el
-   */
-  function testSupportedElements(i, el) {
-    return $(el).is('input:text') || $(el).is('input:password') || $(el).is('textarea');
-  }
-
-  /**
    * Creates a virtual keyboard instance on the provided elements.
    * @param {object} config
    */
@@ -1027,12 +1018,6 @@ function factory($) {
     if (!_config && $(this).data('virtual-keyboard')) {
       return $(this).data('virtual-keyboard');
     }
-
-    $(this).each(function() {
-      if (!$(this).is(testSupportedElements)) {
-        throw Error("Virtual Keyboard does not support element of type: " + $(this).prop('name'));
-      }
-    });
 
     if (!config.individual) {
       var kb = new VirtualKeyboard($(this), config);

@@ -264,12 +264,6 @@ function factory($) {
         this.$container.addClass(this.config.theme);
       }
 
-      if (this.config.show) {
-        this.$container.show();
-      } else {
-        this.$container.hide();
-      }
-
       // hook up element focus events
       this.$el
         .focus(function(e) {
@@ -323,6 +317,12 @@ function factory($) {
       }
 
       this.inited = true;
+
+      if (this.config.show) {
+        this.show(this.$el[0]);
+      } else {
+        this.hide(this.$el[0]);
+      }
     }
 
     /**
@@ -511,12 +511,12 @@ function factory($) {
    * Creates a virtual keyboard instance on the provided elements.
    * @param {object} config
    */
-  $.fn.keyboard = function(config) {
+  $.fn.keyboard = function(_config) {
     var config = Object.assign({}, {
       individual: false,
-    }, config || {});
+    }, _config || {});
 
-    if (!config && $(this).data('virtual-keyboard')) {
+    if (!_config && $(this).data('virtual-keyboard')) {
       return $(this).data('virtual-keyboard');
     }
 

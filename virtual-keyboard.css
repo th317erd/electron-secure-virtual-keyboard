@@ -4,7 +4,14 @@
   font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
   user-select: none;
   white-space: nowrap;
-  border-radius: .3rem;
+  border-radius: .3em;
+  border-style: solid;
+  border-width: 0.1em;
+  border-color: #999;
+  box-shadow: 0px 9px 12px 2px rgba(0, 0, 0, 0.38);
+  z-index: 1;
+  position: relative;
+  pointer-events: all;
 }
 
 .virtual-keyboard .layout {
@@ -30,16 +37,16 @@
   display: inline-block;
   vertical-align: bottom;
   text-align: center;
-  margin: .2rem;
-  padding: .3rem .7rem;
-  line-height: 1.3rem;
+  margin: .2em;
+  padding: .3em .7em;
+  line-height: 1.3em;
   cursor: pointer;
   user-select: none;
   border: 1px solid lightgrey;
-  border-radius: .3rem;
+  border-radius: .3em;
   color: grey;
   white-space: nowrap;
-  min-width: 1rem;
+  min-width: 1em;
 }
 
 .virtual-keyboard .key.spacer {
@@ -67,7 +74,7 @@
 
 .virtual-keyboard .key.space {
   flex: unset;
-  width: 20rem;
+  width: 20em;
 }
 
 .virtual-keyboard .key.space.fill {
@@ -79,7 +86,7 @@
   background: #1b1b1b;
   font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
   user-select: none;
-  padding: .5rem;
+  padding: .5em;
 }
 
 .virtual-keyboard.theme-black .key {
@@ -87,9 +94,9 @@
   vertical-align: bottom;
   background-color: rgb(56, 56, 56);
   background: linear-gradient(#2c2c2c, rgb(65, 65, 65));
-  border-width: 0 0 .2rem 0;
+  border-width: 0 0 .2em 0;
   border-style: none none solid none;
-  border-radius: .3rem;
+  border-radius: .3em;
   border-color: rgb(15, 15, 15);
   text-align: center;
   color: rgb(187, 187, 187);
@@ -99,7 +106,7 @@
 }
 
 .virtual-keyboard.theme-black .key:active {
-  margin-top: .4rem;
+  margin-top: .4em;
   border-bottom-width: 0;
   background-color: rgb(15, 15, 15);
   background: linear-gradient(#202020, #353535);
@@ -115,7 +122,7 @@
   background: #e2e5e8;
   font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
   user-select: none;
-  padding: .5rem;
+  padding: .5em;
 }
 
 .virtual-keyboard.theme-mac .key {
@@ -123,9 +130,9 @@
   vertical-align: bottom;
   background-color: rgb(250, 250, 250);
   background: linear-gradient(#e8e8e8, #fff);
-  border-width: 0 0 .2rem 0;
+  border-width: 0 0 .2em 0;
   border-style: none none solid none;
-  border-radius: .3rem;
+  border-radius: .3em;
   border-color: #aaa;
   text-align: center;
   color: #aaa;
@@ -135,7 +142,7 @@
 }
 
 .virtual-keyboard.theme-mac .key:active {
-  margin-top: .4rem;
+  margin-top: .4em;
   border-bottom-width: 0;
   background-color: rgb(245, 245, 245);
   background: linear-gradient(#dfd8d8, #f4f4f4);
@@ -145,4 +152,25 @@
   background: transparent;
   border: none;
   box-shadow: none;
+}
+
+.virtual-keyboard .kb-close-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5em;
+  height: 2.5em;
+  position: absolute;
+  top: -2.75em;
+  right: -2.75em;
+  background-color: white;
+  border-radius: 50%;
+  border-style: solid;
+  border-width: 0.1em;
+  border-color: #999;
+  box-shadow: 0px 3px 4px 1px rgba(0, 0, 0, 0.38);
+  z-index: 1;
+  font-weight: bold;
+  font-size: 0.75em;
+  cursor: pointer;
 }

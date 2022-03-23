@@ -222,8 +222,9 @@ function factory($) {
         container:      null,
         autoPosition:   true,
         layout:         'us-en',
-        keyTemplate:  '<span class="key"></span>',
-        customKeys:   Object.assign({}, $.fn.keyboard_custom_keys || {}),
+        keyTemplate:    '<span class="key"></span>',
+        customKeys:     Object.assign({}, $.fn.keyboard_custom_keys || {}),
+        closeButton:    true,
       }, config || {});
 
       this.inited = false;
@@ -262,6 +263,15 @@ function factory($) {
 
       if (this.config.theme) {
         this.$container.addClass(this.config.theme);
+      }
+
+      if (this.config.closeButton !== false) {
+        var closeButton = $('<div class="kb-close-button"><span>&#x274c;</span></div>');
+        closeButton.on('click', () => {
+          this.hide(this.$el[0]);
+        });
+
+        this.$container.append(closeButton);
       }
 
       // hook up element focus events
@@ -415,6 +425,9 @@ function factory($) {
      */
     hide(el) {
       this.$container.hide();
+      if (el && typeof el.blur === 'function') {
+        el.blur();
+      }
     }
 
     /**
